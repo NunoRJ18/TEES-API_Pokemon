@@ -14,9 +14,64 @@
     {
       "name": "Pokemons",
       "description": "Endpoints de gerenciamento de Pokémons"
+    },
+    {
+      "name": "Pokedex",
+      "description": "Endpoints de consulta à PokéAPI externa"
+    },
+    {
+      "name": "Trainers",
+      "description": "Endpoints de gerenciamento de treinadores e capturas"
     }
   ],
   "paths": {
+    "/api/v1/pokedex/search": {
+      "get": {
+        "tags": [
+          "Pokedex"
+        ],
+        "summary": "Consulta Pokémon na PokéAPI",
+        "description": "Endpoint para consultar diretamente a PokéAPI externa pelo nome do Pokémon.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Nome do Pokémon",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pokémon retornado com sucesso pela PokéAPI.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PokeApiPokemonDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Pokémon não encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/pokemons": {
       "get": {
         "tags": [
@@ -256,6 +311,177 @@
           }
         }
       }
+    },
+    "/api/v1/trainers": {
+      "post": {
+        "tags": [
+          "Trainers"
+        ],
+        "summary": "Cria um novo treinador",
+        "description": "Endpoint para cadastrar treinadores no banco de dados.",
+        "responses": {
+          "201": {
+            "description": "Treinador criado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Treinador criado com sucesso!"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Trainer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Payload inválido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTrainerDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/trainers/{trainerId}/captures": {
+      "post": {
+        "tags": [
+          "Trainers"
+        ],
+        "summary": "Captura um Pokémon",
+        "description": "Endpoint para capturar um Pokémon consultando a PokéAPI e associando ao treinador.",
+        "parameters": [
+          {
+            "name": "trainerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID do treinador"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Pokémon capturado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Pokémon capturado com sucesso!"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CapturedPokemon"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Payload inválido ou limite de 6 Pokémons atingido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Treinador ou Pokémon não encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapturePokemonDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/trainers/{trainerId}/team": {
+      "get": {
+        "tags": [
+          "Trainers"
+        ],
+        "summary": "Lista o time atual do treinador",
+        "description": "Endpoint para listar Pokémons ativos no time do treinador.",
+        "parameters": [
+          {
+            "name": "trainerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID do treinador"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Time atual retornado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CapturedPokemon"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Treinador não encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -353,6 +579,157 @@
           "level",
           "evolution"
         ]
+      },
+      "PokeApiPokemonDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "pikachu"
+          },
+          "imageUrl": {
+            "type": "string",
+            "example": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png"
+          },
+          "types": {
+            "type": "array",
+            "example": [
+              "electric"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "baseExperience": {
+            "type": "number",
+            "example": 112
+          },
+          "stats": {
+            "type": "object",
+            "properties": {
+              "hp": {
+                "type": "number",
+                "example": 35
+              },
+              "attack": {
+                "type": "number",
+                "example": 55
+              },
+              "defense": {
+                "type": "number",
+                "example": 40
+              },
+              "speed": {
+                "type": "number",
+                "example": 90
+              }
+            }
+          }
+        }
+      },
+      "Trainer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "name": {
+            "type": "string",
+            "example": "Ash"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-10-09T14:00:00.000Z"
+          }
+        }
+      },
+      "CreateTrainerDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Ash"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "CapturePokemonDto": {
+        "type": "object",
+        "properties": {
+          "pokemonName": {
+            "type": "string",
+            "example": "pikachu"
+          }
+        },
+        "required": [
+          "pokemonName"
+        ]
+      },
+      "CapturedPokemon": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "trainerId": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "pokemonName": {
+            "type": "string",
+            "example": "pikachu"
+          },
+          "imageUrl": {
+            "type": "string",
+            "example": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png"
+          },
+          "types": {
+            "type": "array",
+            "example": [
+              "electric"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "baseExperience": {
+            "type": "number",
+            "example": 112
+          },
+          "stats": {
+            "type": "object",
+            "properties": {
+              "hp": {
+                "type": "number",
+                "example": 35
+              },
+              "attack": {
+                "type": "number",
+                "example": 55
+              },
+              "defense": {
+                "type": "number",
+                "example": 40
+              },
+              "speed": {
+                "type": "number",
+                "example": 90
+              }
+            }
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-10-09T14:00:00.000Z"
+          }
+        }
       },
       "ErrorResponse": {
         "type": "object",

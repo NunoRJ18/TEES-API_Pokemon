@@ -2,3 +2,7 @@ node_modules
 dist
 .env
 npm-debug.log
+dev.db
+dev.db-journal
+prisma/dev.db
+prisma/dev.db-journal

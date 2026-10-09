@@ -3,10 +3,10 @@ import { DeletePokemonUseCase } from '@application/use-cases/delete-pokemon';
 import { FindPokemonByIdUseCase } from '@application/use-cases/find-pokemon-by-id';
 import { ListPokemonsUseCase } from '@application/use-cases/list-pokemons';
 import { UpdatePokemonUseCase } from '@application/use-cases/update-pokemon';
-import { InMemoryPokemonRepository } from '@infrastructure/database/in-memory/in-memory-pokemon-repository';
+import { PrismaPokemonRepository } from '@infrastructure/database/prisma/prisma-pokemon-repository';
 import { PokemonController } from '@infrastructure/http/controllers/pokemon-controller';
 
-const pokemonRepository = new InMemoryPokemonRepository();
+const pokemonRepository = new PrismaPokemonRepository();
 
 export function makePokemonController(): PokemonController {
   const createPokemonUseCase = new CreatePokemonUseCase(pokemonRepository);

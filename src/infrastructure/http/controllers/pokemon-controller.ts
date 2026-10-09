@@ -4,6 +4,13 @@ import { ListPokemonsUseCase } from '@application/use-cases/list-pokemons';
 import { FindPokemonByIdUseCase } from '@application/use-cases/find-pokemon-by-id';
 import { UpdatePokemonUseCase } from '@application/use-cases/update-pokemon';
 import { DeletePokemonUseCase } from '@application/use-cases/delete-pokemon';
+import {
+  createPokemonBodySchema,
+  listPokemonsQuerySchema,
+  pokemonIdParamsSchema,
+  updatePokemonBodySchema,
+} from '@infrastructure/http/validation/pokemon-schemas';
+import { validateRequest } from '@infrastructure/http/validation/validate-request';
 
 export class PokemonController {
   constructor(
@@ -15,7 +22,10 @@ export class PokemonController {
   ) {}
 
   async create(req: Request, res: Response): Promise<Response> {
-    const { id, name, type, level, evolution } = req.body;
+    const { id, name, type, level, evolution } = validateRequest(
+      createPokemonBodySchema,
+      req.body,
+    );
 
     const pokemon = await this.createPokemonUseCase.execute({
       id,
@@ -38,11 +48,9 @@ export class PokemonController {
   }
 
   async list(req: Request, res: Response): Promise<Response> {
-    const { type } = req.query;
+    const { type } = validateRequest(listPokemonsQuerySchema, req.query);
 
-    const pokemons = await this.listPokemonsUseCase.execute(
-      typeof type === 'string' ? type : undefined,
-    );
+    const pokemons = await this.listPokemonsUseCase.execute(type);
 
     const formattedPokemons = pokemons.map((pokemon) => ({
       id: pokemon.id,
@@ -59,7 +67,7 @@ export class PokemonController {
     req: Request<{ id: string }>,
     res: Response,
   ): Promise<Response> {
-    const { id } = req.params;
+    const { id } = validateRequest(pokemonIdParamsSchema, req.params);
 
     const pokemon = await this.findPokemonByIdUseCase.execute(id);
 
@@ -81,8 +89,11 @@ export class PokemonController {
   }
 
   async update(req: Request<{ id: string }>, res: Response): Promise<Response> {
-    const { id } = req.params;
-    const { name, type, level, evolution } = req.body;
+    const { id } = validateRequest(pokemonIdParamsSchema, req.params);
+    const { name, type, level, evolution } = validateRequest(
+      updatePokemonBodySchema,
+      req.body,
+    );
 
     const pokemon = await this.updatePokemonUseCase.execute(id, {
       name,
@@ -110,7 +121,7 @@ export class PokemonController {
   }
 
   async delete(req: Request<{ id: string }>, res: Response): Promise<Response> {
-    const { id } = req.params;
+    const { id } = validateRequest(pokemonIdParamsSchema, req.params);
 
     const deleted = await this.deletePokemonUseCase.execute(id);
 
