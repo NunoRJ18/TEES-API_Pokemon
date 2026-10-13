@@ -21,9 +21,11 @@ export const validateRequest = (schemas: RequestValidationSchemas) => {
       }
 
       if (schemas.query) {
-        req.query = (await schemas.query.parseAsync(
+        const parsedQuery = (await schemas.query.parseAsync(
           req.query,
         )) as Request['query'];
+
+        Object.assign(req.query, parsedQuery);
       }
 
       if (schemas.params) {
