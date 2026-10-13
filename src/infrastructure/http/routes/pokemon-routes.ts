@@ -1,12 +1,23 @@
 import { Router } from 'express';
+
+import {
+  createPokemonBodySchema,
+  listPokemonsQuerySchema,
+  pokemonIdParamsSchema,
+  updatePokemonBodySchema,
+} from '@infrastructure/http/validation/pokemon-schemas';
+import { validateRequest } from '@infrastructure/http/validation/validate-request';
 import { makePokemonController } from '@main/factories/makePokemonController.factory';
 
 const pokemonRoutes = Router();
 
 const pokemonController = makePokemonController();
 
-pokemonRoutes.get('/', (req, res) => {
-  /*
+pokemonRoutes.get(
+  '/',
+  validateRequest({ query: listPokemonsQuerySchema }),
+  (req, res) => {
+    /*
     #swagger.path = '/api/v1/pokemons'
     #swagger.tags = ['Pokemons']
     #swagger.summary = 'Lista todos os Pokémons'
@@ -34,11 +45,15 @@ pokemonRoutes.get('/', (req, res) => {
       }
     }
   */
-  return pokemonController.list(req, res);
-});
+    return pokemonController.list(req, res);
+  },
+);
 
-pokemonRoutes.get('/:id', (req, res) => {
-  /*
+pokemonRoutes.get(
+  '/:id',
+  validateRequest({ params: pokemonIdParamsSchema }),
+  (req, res) => {
+    /*
     #swagger.path = '/api/v1/pokemons/{id}'
     #swagger.tags = ['Pokemons']
     #swagger.summary = 'Busca um Pokémon por ID'
@@ -71,11 +86,15 @@ pokemonRoutes.get('/:id', (req, res) => {
       }
     }
   */
-  return pokemonController.findById(req, res);
-});
+    return pokemonController.findById(req, res);
+  },
+);
 
-pokemonRoutes.post('/', (req, res) => {
-  /*
+pokemonRoutes.post(
+  '/',
+  validateRequest({ body: createPokemonBodySchema }),
+  (req, res) => {
+    /*
     #swagger.path = '/api/v1/pokemons'
     #swagger.tags = ['Pokemons']
     #swagger.summary = 'Cria um novo Pokémon'
@@ -114,11 +133,18 @@ pokemonRoutes.post('/', (req, res) => {
       }
     }
   */
-  return pokemonController.create(req, res);
-});
+    return pokemonController.create(req, res);
+  },
+);
 
-pokemonRoutes.put('/:id', (req, res) => {
-  /*
+pokemonRoutes.put(
+  '/:id',
+  validateRequest({
+    params: pokemonIdParamsSchema,
+    body: updatePokemonBodySchema,
+  }),
+  (req, res) => {
+    /*
     #swagger.path = '/api/v1/pokemons/{id}'
     #swagger.tags = ['Pokemons']
     #swagger.summary = 'Atualiza um Pokémon'
@@ -163,11 +189,15 @@ pokemonRoutes.put('/:id', (req, res) => {
       }
     }
   */
-  return pokemonController.update(req, res);
-});
+    return pokemonController.update(req, res);
+  },
+);
 
-pokemonRoutes.delete('/:id', (req, res) => {
-  /*
+pokemonRoutes.delete(
+  '/:id',
+  validateRequest({ params: pokemonIdParamsSchema }),
+  (req, res) => {
+    /*
     #swagger.path = '/api/v1/pokemons/{id}'
     #swagger.tags = ['Pokemons']
     #swagger.summary = 'Remove um Pokémon'
@@ -203,7 +233,8 @@ pokemonRoutes.delete('/:id', (req, res) => {
       }
     }
   */
-  return pokemonController.delete(req, res);
-});
+    return pokemonController.delete(req, res);
+  },
+);
 
 export { pokemonRoutes };

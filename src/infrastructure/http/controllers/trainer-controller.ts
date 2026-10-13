@@ -5,13 +5,6 @@ import { CapturedPokemon } from '@domain/entities/captured-pokemon';
 import { Trainer } from '@domain/entities/trainer';
 import { Request, Response } from 'express';
 
-import {
-  capturePokemonBodySchema,
-  createTrainerBodySchema,
-  trainerIdParamsSchema,
-} from '@infrastructure/http/validation/trainer-schemas';
-import { validateRequest } from '@infrastructure/http/validation/validate-request';
-
 export class TrainerController {
   constructor(
     private readonly createTrainerUseCase: CreateTrainerUseCase,
@@ -20,7 +13,7 @@ export class TrainerController {
   ) {}
 
   async create(req: Request, res: Response): Promise<Response> {
-    const { name } = validateRequest(createTrainerBodySchema, req.body);
+    const { name } = req.body;
 
     const trainer = await this.createTrainerUseCase.execute({ name });
 
@@ -30,12 +23,9 @@ export class TrainerController {
     });
   }
 
-  async capture(
-    req: Request<{ trainerId: string }>,
-    res: Response,
-  ): Promise<Response> {
-    const { trainerId } = validateRequest(trainerIdParamsSchema, req.params);
-    const { pokemonName } = validateRequest(capturePokemonBodySchema, req.body);
+  async capture(req: Request, res: Response): Promise<Response> {
+    const trainerId = String(req.params.trainerId);
+    const { pokemonName } = req.body;
 
     const capturedPokemon = await this.capturePokemonUseCase.execute({
       trainerId,
@@ -48,11 +38,8 @@ export class TrainerController {
     });
   }
 
-  async team(
-    req: Request<{ trainerId: string }>,
-    res: Response,
-  ): Promise<Response> {
-    const { trainerId } = validateRequest(trainerIdParamsSchema, req.params);
+  async team(req: Request, res: Response): Promise<Response> {
+    const trainerId = String(req.params.trainerId);
 
     const team = await this.listTrainerTeamUseCase.execute(trainerId);
 

@@ -1,12 +1,17 @@
 import { Router } from 'express';
 
+import { searchPokedexQuerySchema } from '@infrastructure/http/validation/pokedex-schemas';
+import { validateRequest } from '@infrastructure/http/validation/validate-request';
 import { makePokedexController } from '@main/factories/makePokedexController.factory';
 
 const pokedexRoutes = Router();
 const pokedexController = makePokedexController();
 
-pokedexRoutes.get('/search', (req, res) => {
-  /*
+pokedexRoutes.get(
+  '/search',
+  validateRequest({ query: searchPokedexQuerySchema }),
+  (req, res) => {
+    /*
     #swagger.path = '/api/v1/pokedex/search'
     #swagger.tags = ['Pokedex']
     #swagger.summary = 'Consulta Pokémon na PokéAPI'
@@ -39,7 +44,8 @@ pokedexRoutes.get('/search', (req, res) => {
       }
     }
   */
-  return pokedexController.search(req, res);
-});
+    return pokedexController.search(req, res);
+  },
+);
 
 export { pokedexRoutes };

@@ -1,12 +1,21 @@
 import { Router } from 'express';
 
+import {
+  capturePokemonBodySchema,
+  createTrainerBodySchema,
+  trainerIdParamsSchema,
+} from '@infrastructure/http/validation/trainer-schemas';
+import { validateRequest } from '@infrastructure/http/validation/validate-request';
 import { makeTrainerController } from '@main/factories/makeTrainerController.factory';
 
 const trainerRoutes = Router();
 const trainerController = makeTrainerController();
 
-trainerRoutes.post('/', (req, res) => {
-  /*
+trainerRoutes.post(
+  '/',
+  validateRequest({ body: createTrainerBodySchema }),
+  (req, res) => {
+    /*
     #swagger.path = '/api/v1/trainers'
     #swagger.tags = ['Trainers']
     #swagger.summary = 'Cria um novo treinador'
@@ -45,11 +54,18 @@ trainerRoutes.post('/', (req, res) => {
       }
     }
   */
-  return trainerController.create(req, res);
-});
+    return trainerController.create(req, res);
+  },
+);
 
-trainerRoutes.post('/:trainerId/captures', (req, res) => {
-  /*
+trainerRoutes.post(
+  '/:trainerId/captures',
+  validateRequest({
+    params: trainerIdParamsSchema,
+    body: capturePokemonBodySchema,
+  }),
+  (req, res) => {
+    /*
     #swagger.path = '/api/v1/trainers/{trainerId}/captures'
     #swagger.tags = ['Trainers']
     #swagger.summary = 'Captura um Pokémon'
@@ -102,11 +118,15 @@ trainerRoutes.post('/:trainerId/captures', (req, res) => {
       }
     }
   */
-  return trainerController.capture(req, res);
-});
+    return trainerController.capture(req, res);
+  },
+);
 
-trainerRoutes.get('/:trainerId/team', (req, res) => {
-  /*
+trainerRoutes.get(
+  '/:trainerId/team',
+  validateRequest({ params: trainerIdParamsSchema }),
+  (req, res) => {
+    /*
     #swagger.path = '/api/v1/trainers/{trainerId}/team'
     #swagger.tags = ['Trainers']
     #swagger.summary = 'Lista o time atual do treinador'
@@ -142,7 +162,8 @@ trainerRoutes.get('/:trainerId/team', (req, res) => {
       }
     }
   */
-  return trainerController.team(req, res);
-});
+    return trainerController.team(req, res);
+  },
+);
 
 export { trainerRoutes };
